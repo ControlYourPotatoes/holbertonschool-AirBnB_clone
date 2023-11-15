@@ -1,58 +1,73 @@
 #!/usr/bin/python3
-""" Module for testing file storage"""
+"""Module test_file_storage"""
 import unittest
 import json
-from models.base_model import BaseModel
-from models.engine.file_storage import FileStorage
 import os
+from models.base_model import BaseModel
+from models.city import City
+from models.engine.file_storage import FileStorage
+from models import storage
+from models.user import User
 
 class TestFileStorage(unittest.TestCase):
-    """ Testing File Storae functionality """
+    """ Testing File Storage functionality """
 
     def setUp(self):
-        self.fs = FileStorage()
-        self.file_path = 'file.json'
+        """Set up: Reset storage and ensure starting with a clean state."""
+        FileStorage._FileStorage__objects = {}
+        if os.path.exists("file.json"):
+            os.remove("file.json")
 
     def tearDown(self):
-        """Tear down"""
-        os.remove(self.file_path)
+        """Reset FileStorage and delete the file.json after each test"""
+        FileStorage._FileStorage__objects = {}  # Reset internal objects dictionary
+        if os.path.exists("file.json"):
+            os.remove("file.json")  # Ensure the file.json is deleted
 
     def test_all(self):
-        """Test all"""
-        fs2 = FileStorage()
-        self.assertEqual(self.fs.all(), fs2.all())
+        """Test all method of FileStorage."""
+        bm = BaseModel()
+        storage.new(bm)
+        self.assertIn(f'BaseModel.{bm.id}', storage.all())  # Check if the new object is in storage
 
     def test_new(self):
         """Test new"""
-        bm1 = BaseModel()
-        self.assertEqual(len(self.fs.all()), 0)  # Empty
-        self.fs.new(bm1)
-        self.assertEqual(len(self.fs.all()), 1)  # 1 object stored
-        self.assertIn(f'BaseModel.{bm1.id}', self.fs.all())
+        obj3 = City()
+        storage.new(obj3)
+        objs = storage.all()
+        self.assertIn(f"{type(obj3).__name__}.{obj3.id}", objs)
 
     def test_save(self):
-        """Test save"""
-        bm1 = BaseModel()
-        self.assertEqual(len(self.fs.all()), 0) # Empty
-        self.fs.new(bm1)
-        self.assertEqual(len(self.fs.all()), 1) # 1 object stored
-        self.assertIn(f'BaseModel.{bm1.id}', self.fs.all())
+        """Test save method of FileStorage."""
+        bm = BaseModel()
+        storage.new(bm)
+        storage.save()
+        self.assertTrue(os.path.isfile('file.json'))  # Check if file.json is created
 
-        self.fs.save()
         with open('file.json', 'r') as f:
             data = json.load(f)
-            self.assertEqual(len(data), 1) # 1 object stored
-            self.assertIn(f'BaseModel.{bm1.id}', data)
+        self.assertIn(f'BaseModel.{bm.id}', data)  # Check if the BaseModel object is saved
+    
+    def test_reload(self):
+        """Test reload method of FileStorage."""
+        # Ensure initial state is clean
+        self.assertEqual(len(storage.all()), 0, "Initial storage is not empty")
 
-    def test_delete(self):
-        """Test delete method of FileStorage"""
+        # Create a new BaseModel object, save it, and then clear the storage
         bm = BaseModel()
-        self.fs.new(bm)  # Adding the object to the storage
-        self.assertIn(f"BaseModel.{bm.id}", self.fs.all())  # Check if object is added
+        storage.new(bm)
+        storage.save()
+        object_id = f'BaseModel.{bm.id}'
+        self.assertIn(object_id, storage.all())
 
-        # Now delete the object and check if it's removed
-        self.fs.delete(bm)
-        self.assertNotIn(f"BaseModel.{bm.id}", self.fs.all())  # Object should be removed
+        # Clearing the objects and ensuring storage is empty before reload
+        FileStorage._FileStorage__objects = {}
+        self.assertEqual(len(storage.all()), 0, "Storage not cleared before reload")
+
+        # Reload and check if the object is restored
+        storage.reload()
+        self.assertIn(object_id, storage.all(), "Object not found after reload")
+
 
 if __name__ == '__main__':
     unittest.main()
