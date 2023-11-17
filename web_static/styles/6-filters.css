@@ -23,9 +23,7 @@
     border-right: 1px solid #DDDDDD;
 }
 
-.locations h2 {
-    font-size: 16px;
-}
+
 
 .locations h3, .amenities h3, .locations h2 {
     font-weight: 600;
@@ -55,6 +53,10 @@
 
 .locations ul ul {
     margin-left: 20px;
+}
+
+.locations h2 {
+    font-size: 16px;
 }
 
 .search-btn {
