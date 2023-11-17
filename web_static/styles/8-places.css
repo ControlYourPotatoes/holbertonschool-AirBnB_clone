@@ -78,7 +78,7 @@ article h2 {
 }
 
 .user {
-    text-align: left; /* Aligns text to the left */
+    text-align: left;
     font-weight: bold;
     margin-top: 10px;
     margin-bottom: 5px;
@@ -99,7 +99,6 @@ article h2 {
 
 .max_guest {
     width: 100px;
-    /* Other styles... */
     background-image: url('../images/icon_group.png');
     background-size: contain;
     background-repeat: no-repeat;
