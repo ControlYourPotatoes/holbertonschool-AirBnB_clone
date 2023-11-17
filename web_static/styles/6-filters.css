@@ -50,7 +50,7 @@
 }
 
 .locations:hover .popover, .amenities:hover .popover {
-    display: block; /* Show on hover */
+    display: block; /* On Hover */
 }
 
 .locations ul ul {
